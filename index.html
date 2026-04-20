@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attaisnojumu ģenerators</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: #f5f2eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    font-family: Georgia, "Times New Roman", serif;
+    color: #111;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 580px;
+  }
+
+  header {
+    margin-bottom: 28px;
+  }
+
+  h1 {
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    font-weight: normal;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: #555;
+  }
+
+  .tag {
+    display: inline-block;
+    margin-top: 10px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #888;
+  }
+
+  /* category tabs */
+  .cats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .cat {
+    padding: 6px 14px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    border: 1.5px solid #bbb;
+    background: transparent;
+    color: #666;
+    cursor: pointer;
+    border-radius: 0;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+    flex: 0 0 auto;
+  }
+
+  .cat:hover { border-color: #111; color: #111; }
+
+  .cat.active {
+    background: #111;
+    color: #f5f2eb;
+    border-color: #111;
+  }
+
+  .excuse-box {
+    border: 2px solid #111;
+    padding: 32px 28px;
+    min-height: 130px;
+    display: flex;
+    align-items: center;
+    background: #fff;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .excuse-box::before {
+    content: '\201C';
+    font-size: 5rem;
+    line-height: 1;
+    color: #e8e2d6;
+    position: absolute;
+    top: 8px;
+    left: 16px;
+    font-family: Georgia, serif;
+    pointer-events: none;
+  }
+
+  .excuse-text {
+    font-size: clamp(1rem, 2.4vw, 1.18rem);
+    line-height: 1.65;
+    position: relative;
+    z-index: 1;
+    animation: appear 0.3s ease;
+  }
+
+  @keyframes appear {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  button {
+    padding: 14px 22px;
+    font-size: 0.95rem;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: 600;
+    border: 2px solid #111;
+    cursor: pointer;
+    border-radius: 0;
+    transition: background 0.12s, color 0.12s, transform 0.1s;
+    letter-spacing: 0.01em;
+  }
+
+  button:active { transform: translateY(1px); }
+
+  .btn-primary {
+    background: #111;
+    color: #f5f2eb;
+    flex: 2 1 200px;
+  }
+  .btn-primary:hover { background: #333; }
+
+  .btn-copy {
+    background: transparent;
+    color: #111;
+    flex: 1 1 100px;
+  }
+  .btn-copy:hover { background: #111; color: #f5f2eb; }
+  .btn-copy.copied { background: #111; color: #f5f2eb; }
+
+  footer {
+    margin-top: 28px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.78rem;
+    color: #bbb;
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Attaisnojumu<br><em>ģenerators</em></h1>
+    <span class="tag">Sūti droši. Neviens nepārbaudīs.</span>
+  </header>
+
+  <div class="cats" id="cats">
+    <button class="cat active" data-cat="visi">Visi</button>
+    <button class="cat" data-cat="slimiba">Slimība</button>
+    <button class="cat" data-cat="gimene">Ģimene</button>
+    <button class="cat" data-cat="transports">Transports</button>
+    <button class="cat" data-cat="tehnika">Tehnika</button>
+    <button class="cat" data-cat="darbs">Darbs</button>
+  </div>
+
+  <div class="excuse-box">
+    <p class="excuse-text" id="excuse">Izvēlies kategoriju un spied pogu.</p>
+  </div>
+
+  <div class="buttons">
+    <button class="btn-primary" id="generate">Ģenerēt attaisnojumu</button>
+    <button class="btn-copy" id="copy">Kopēt</button>
+  </div>
+
+  <footer>attaisnojumi.lv &nbsp;·&nbsp; bezmaksas pakalpojums</footer>
+</div>
+
+<script>
+  const data = {
+    slimiba: [
+      "Pamodos šorīt ar temperatūru 38.5. Ārsts teica palikt mājās un nedoties starp cilvēkiem.",
+      "No rīta sākās stipras galvassāpes — pat gaisma sāp. Guļu, cerams pāries.",
+      "Izskatās pēc kāda vīrusa — kakls sāp, drebuļi. Labāk neieradīšos, lai neinficētu visus.",
+      "Šorīt vēmiens. Neesmu drošs, ko apēdu vakar, bet šodien nekur nekursēšu.",
+      "Esmu uz kājām, bet tikai daļēji. Temperatūra 37.8, ārsts ieteica ievērot mieru.",
+      "Alerģija šodien ir uz tādu līmeni, ka acis neredz un deguns nelaiž elpot. Paliku mājās.",
+      "Mugura sagāja no rīta. Nevar nostāvēt, necerēju, ka tā notiks tieši šodien.",
+      "Vakarā sāka sāpēt rīkle, šorīt ir daudz sliktāk. Iešu pie ārsta, atnākšu pēc tam.",
+      "Saindēšanās ar pārtiku, vai vismaz tā izskatās. Šodien nevaru atstāt mājas.",
+      "Esmu ar klepu, un kolēģi droši vien nepateiktos. Strādāšu no mājām, ja iespējas."
+    ],
+    gimene: [
+      "Bērnam ir temperatūra un bērnudārzs nepieņem ar drudzi. Nevaru viņu atstāt vienu.",
+      "Mamma saslima šorīt — jābrauc palīdzēt. Atvainojos par īso brīdinājumu.",
+      "Bērns klepoja visu nakti, neviens neguļa. Šodien abi paliekam mājās.",
+      "Bērnam vēl nav beidzies tas vīruss un skola lūdza nenākt. Ko es varu darīt.",
+      "Mums ir ūdensvada noplūde — santehniķis var ierasties tikai šodien no 9 līdz 5. Nevaru atstāt dzīvokli.",
+      "Tētis nokrita, es braucu uz slimnīcu. Nezinu, kad būšu atpakaļ.",
+      "Bērns saslima nakts laikā, tagad čīkst un prasa mammu. Šodien esmu viņam.",
+      "Vecvecāki atnāca bez iepriekšēja brīdinājuma un tagad ir situācija, kuru nevaru vienkārši atstāt.",
+      "Bērnudārzs piezvanīja no rīta — bērnam ir drudzis, jāatbrauc paņemt.",
+      "Māsa bija nelaimes gadījumā, esmu ceļā uz slimnīcu. Atrakstīšu, kad zināšu vairāk."
+    ],
+    transports: [
+      "Mašīna nenodūcās šorīt. Gaidu evakuatoru, nezinu, cik ilgi prasīs.",
+      "Iestrēgu uz Juglas tilta — sastrēgums no 7:30. Kustamies pa metram.",
+      "Tieši bija avārija uz Brīvības ielas, policija bloķēja abu virzienu joslas. Gāju apkārt caur centru.",
+      "Sabiedriskais transports šorīt negāja pēc saraksta — gaidīju 25 minūtes, tad atcēla.",
+      "Velosipēdam nolaižas riepa pusceļā. Grūžu atpakaļ, iešu ar kājām.",
+      "Tramvajs apstājās starp stacijām un lūdza visus izkāpt. Devos kājām no Tērbatas.",
+      "Mašīnai izkuka akumulators nakts laikā. Aizkavējos, kamēr atrisināju.",
+      "Uz Dienvidu tilta kolonna stāv — radio saka negadījums, apbraukšana nav iespējama.",
+      "Vilciens uz Rīgu atcēla bez iepriekšēja paziņojuma. Gaidu nākamo.",
+      "Parkošanās zonu nevarēju atrast pusotru stundu. Soda lapiņa bija klāt, kad atgriezos."
+    ],
+    tehnika: [
+      "Dators šorīt atjauninājās un vairs normāli neieslēdzas. Gaidu IT, nezinu, cik ilgi.",
+      "Internets ir pilnībā ārā — Tele2 saka 2–3 stundas. Strādāt nevar.",
+      "Telefons nomira nakts laikā, lādētājs nestrādāja. Pamodos bez modinātāja un bez saziņas.",
+      "Darba VPN neļauj pieslēgties jau stundu. IT atbalsts atbild ar aizturi.",
+      "Kamera uz datora nestrādā un tikšanās ir online. Mēģinu risināt.",
+      "Mans darba e-pasts kāda iemesla dēļ nenosūta neko kopš vakar vakara. Pēta IT.",
+      "Strāvas padeve dzīvoklī krita un tagad nevar ieslēgt nevienu ierīci. Saimnieks brauc.",
+      "Telefona ekrāns saplaisāja krītot, pirkstu nolasa nepareizi. Šobrīd gandrīz nelietojams.",
+      "Darba sistēma met kļūdu katru reizi, kad mēģinu pieslēgties. Vēl neesmu ticis iekšā.",
+      "Printeri vajadzēja šorīt un tieši šorīt tas nolēma beidzt dzīvot."
+    ],
+    darbs: [
+      "Man bija zobārsta vizīte šorīt — pēc procedūras teica stundu nebraukt. Kavējos.",
+      "CSDD pieraksts bija šodien, nevarēju pārcelt. Ilgāk nekā plānots.",
+      "Mans priekšnieks mani aizturēja ar tikšanos tieši pirms iziešanas. Nespēju pateikt nē.",
+      "Aizmirsu par šo tikšanos. Ļoti atvainojos. Vai varam pārcelt?",
+      "Gaidu svarīgu paku — jau trešais piegādes mēģinājums. Ja nebūšu mājās, atdos uz depo.",
+      "Man bija darba avārija šorīt, kas nevarēja pagaidīt. Tagad esmu brīvs.",
+      "Tikko uzzināju, ka pierakstīju tikšanās laiku stundu vēlāk, nekā patiesībā bija.",
+      "Atslēgas izkrita no somas, pamanu to tikai pie durvīm. Jāmeklē rezerves.",
+      "Bankā bija rinda un tas, ko vajadzēja nokārtot, nevarēja tikt izdarīts tiešsaistē.",
+      "Pildīju recepti aptiekā — pirmajā nebija, otrā bija rinda. Viss kopā prasīja stundu vairāk."
+    ]
+  };
+
+  // flat list for "visi"
+  const all = Object.values(data).flat();
+
+  const excuseEl = document.getElementById('excuse');
+  const generateBtn = document.getElementById('generate');
+  const copyBtn = document.getElementById('copy');
+  const catButtons = document.querySelectorAll('.cat');
+
+  let activeCat = 'visi';
+  let lastIndex = -1;
+
+  catButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      catButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCat = btn.dataset.cat;
+      lastIndex = -1;
+    });
+  });
+
+  function getPool() {
+    return activeCat === 'visi' ? all : data[activeCat];
+  }
+
+  function generate() {
+    const pool = getPool();
+    let i;
+    do { i = Math.floor(Math.random() * pool.length); }
+    while (i === lastIndex && pool.length > 1);
+    lastIndex = i;
+    excuseEl.style.animation = 'none';
+    excuseEl.offsetHeight;
+    excuseEl.style.animation = '';
+    excuseEl.textContent = pool[i];
+  }
+
+  async function copy() {
+    const text = excuseEl.textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    copyBtn.textContent = 'Nokopēts';
+    copyBtn.classList.add('copied');
+    setTimeout(() => {
+      copyBtn.textContent = 'Kopēt';
+      copyBtn.classList.remove('copied');
+    }, 1500);
+  }
+
+  generateBtn.addEventListener('click', generate);
+  copyBtn.addEventListener('click', copy);
+</script>
+</body>
+</html>
